@@ -27,7 +27,7 @@ def calcular_recarga(monto: int, premium: bool = False) -> dict:
     if premium:
         bonificacion_pct += BONIFICACION_PREMIUM_PCT
 
-    datos_extra_mb = int(monto * bonificacion_pct / 100 * 0.1 * 100)
+    datos_extra_mb = int(monto * bonificacion_pct / 100)
 
     return {
         "monto": monto,
