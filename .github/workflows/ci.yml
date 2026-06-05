@@ -1,0 +1,72 @@
+name: CI Pipeline - RecargaYa
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Pruebas unitarias
+        run: pytest tests/test_recarga.py -v
+
+      - name: Pruebas BDD
+        run: pytest tests/test_bdd.py -v
+
+      - name: Seguridad con Bandit
+        run: bandit -r src/ -ll
+
+  performance:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    needs: tests
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Iniciar servidor FastAPI
+        run: |
+          python src/api.py &
+          echo "Esperando que el servidor arranque..."
+          for i in {1..10}; do
+            curl -s "http://localhost:8000/recarga?monto=10000" && echo "Servidor listo!" && break
+            echo "Intento $i fallido, esperando 2s..."
+            sleep 2
+          done
+
+      - name: Pruebas de rendimiento Locust
+        run: |
+          locust -f locustfile.py \
+            --headless \
+            --host http://localhost:8000 \
+            --users 30 \
+            --spawn-rate 10 \
+            --run-time 30s \
+            --csv=locust_report \
+            --exit-code-on-error 0
+
+      - name: Subir reporte Locust
+        uses: actions/upload-artifact@v4
+        with:
+          name: locust-report
+          path: locust_report*.csv
