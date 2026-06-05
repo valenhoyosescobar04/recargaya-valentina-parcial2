@@ -35,3 +35,13 @@ def calcular_recarga(monto: int, premium: bool = False) -> dict:
         "bonificacion_pct": bonificacion_pct,
         "datos_extra_mb": datos_extra_mb,
     }
+
+def describir_recarga(monto: int, premium: bool = False) -> str:
+    """Retorna descripción legible del resultado de la recarga."""
+    resultado = calcular_recarga(monto, premium)
+    if resultado["bonificacion_pct"] == 0:
+        return f"Recarga de ${monto:,} sin bonificacion."
+    return (
+        f"Recarga de ${monto:,} con {resultado['bonificacion_pct']}% "
+        f"de bonificacion = {resultado['datos_extra_mb']} MB extra."
+    )
