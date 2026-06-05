@@ -85,3 +85,26 @@ class TestDatosBonificados:
         assert "premium" in resultado
         assert "bonificacion_pct" in resultado
         assert "datos_extra_mb" in resultado
+
+class TestValoresLimite:
+
+    @pytest.mark.parametrize("monto,premium,bonificacion_pct,datos_extra_mb,valido", [
+        (999,   False, None, None,  False),  # límite inferior rechazado
+        (1000,  False, 0,    0,     True),   # límite inferior aceptado
+        (9999,  False, 0,    0,     True),   # justo antes del 10%
+        (10000, False, 10,   1000,  True),   # exactamente umbral 10%
+        (29999, False, 10,   2999,  True),   # justo antes del 25%
+        (30000, False, 25,   7500,  True),   # exactamente umbral 25%
+        (50000, False, 25,   12500, True),   # límite superior aceptado
+        (50001, False, None, None,  False),  # límite superior rechazado
+        (10000, True,  15,   1500,  True),   # premium + 10%
+        (30000, True,  30,   9000,  True),   # premium + 25%
+    ])
+    def test_tabla_equivalencia(self, monto, premium, bonificacion_pct, datos_extra_mb, valido):
+        if not valido:
+            with pytest.raises(ValueError):
+                calcular_recarga(monto, premium)
+        else:
+            resultado = calcular_recarga(monto, premium)
+            assert resultado["bonificacion_pct"] == bonificacion_pct
+            assert resultado["datos_extra_mb"] == datos_extra_mb
