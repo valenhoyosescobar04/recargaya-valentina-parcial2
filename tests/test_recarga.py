@@ -4,7 +4,6 @@ from src.recarga import calcular_recarga
 
 
 class TestValidacionMonto:
-    """Regla: monto debe estar entre $1.000 y $50.000"""
 
     def test_monto_menor_al_minimo_es_rechazado(self):
         with pytest.raises(ValueError):
@@ -32,7 +31,6 @@ class TestValidacionMonto:
 
 
 class TestBonificacionDatos:
-    """Regla: $10.000+ → 10%, $30.000+ → 25%"""
 
     def test_menos_de_10000_no_tiene_bonificacion(self):
         resultado = calcular_recarga(5000)
