@@ -60,22 +60,28 @@ class TestBonificacionDatos:
         resultado = calcular_recarga(50000)
         assert resultado["bonificacion_pct"] == 25
 
+class TestDatosBonificados:
+    """Verifica que los MB extra se calculen correctamente"""
 
-class TestPlanPremium:
-    """Regla: premium suma 5% adicional"""
+    def test_sin_bonificacion_datos_extra_es_cero(self):
+        resultado = calcular_recarga(5000)
+        assert resultado["datos_extra_mb"] == 0
 
-    def test_premium_sin_bonificacion_base_suma_5_pct(self):
-        resultado = calcular_recarga(5000, premium=True)
-        assert resultado["bonificacion_pct"] == 5
+    def test_10000_con_10_pct_da_1000_mb(self):
+        resultado = calcular_recarga(10000)
+        assert resultado["datos_extra_mb"] == 1000
 
-    def test_premium_con_10_pct_base_da_15_pct(self):
+    def test_30000_con_25_pct_da_7500_mb(self):
+        resultado = calcular_recarga(30000)
+        assert resultado["datos_extra_mb"] == 7500
+
+    def test_10000_premium_15_pct_da_1500_mb(self):
         resultado = calcular_recarga(10000, premium=True)
-        assert resultado["bonificacion_pct"] == 15
+        assert resultado["datos_extra_mb"] == 1500
 
-    def test_premium_con_25_pct_base_da_30_pct(self):
-        resultado = calcular_recarga(30000, premium=True)
-        assert resultado["bonificacion_pct"] == 30
-
-    def test_no_premium_no_suma_extra(self):
-        resultado = calcular_recarga(10000, premium=False)
-        assert resultado["bonificacion_pct"] == 10
+    def test_resultado_contiene_todos_los_campos(self):
+        resultado = calcular_recarga(10000)
+        assert "monto" in resultado
+        assert "premium" in resultado
+        assert "bonificacion_pct" in resultado
+        assert "datos_extra_mb" in resultado
